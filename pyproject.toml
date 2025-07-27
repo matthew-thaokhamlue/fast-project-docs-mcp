@@ -1,0 +1,188 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "document-generator-mcp"
+version = "0.1.0"
+description = "MCP server for automated document generation (PRD, SPEC, DESIGN)"
+authors = [
+    {name = "Kiro Development Team", email = "dev@kiro.ai"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+keywords = ["mcp", "document-generation", "prd", "spec", "design", "automation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Text Processing :: Markup :: Markdown",
+]
+
+dependencies = [
+    # MCP Framework
+    "mcp>=1.0.0",
+    
+    # File Processing
+    "PyPDF2>=3.0.0",
+    "python-docx>=1.1.0",
+    "Pillow>=10.0.0",
+    "pytesseract>=0.3.10",
+    
+    # Data Processing
+    "pyyaml>=6.0.0",
+    "python-frontmatter>=1.1.0",
+    "markdown>=3.5.0",
+    
+    # Async Support
+    "aiofiles>=23.0.0",
+    "asyncio-throttle>=1.0.2",
+    
+    # Utilities
+    "pathlib-mate>=1.2.0",
+    "python-dateutil>=2.8.0",
+    "typing-extensions>=4.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    # Testing
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    
+    # Code Quality
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+    
+    # Documentation
+    "sphinx>=7.1.0",
+    "sphinx-rtd-theme>=1.3.0",
+    "myst-parser>=2.0.0",
+]
+
+server = [
+    # HTTP Server Support
+    "uvicorn>=0.23.0",
+    "fastapi>=0.103.0",
+    
+    # SSE Support
+    "sse-starlette>=1.6.0",
+]
+
+all = [
+    "document-generator-mcp[dev,server]"
+]
+
+[project.urls]
+Homepage = "https://github.com/kiro-ai/document-generator-mcp"
+Repository = "https://github.com/kiro-ai/document-generator-mcp"
+Documentation = "https://document-generator-mcp.readthedocs.io"
+Issues = "https://github.com/kiro-ai/document-generator-mcp/issues"
+
+[project.scripts]
+document-generator-mcp = "document_generator_mcp.server.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["document_generator_mcp*"]
+
+[tool.setuptools.package-data]
+"document_generator_mcp.templates" = ["*.md", "*.yaml", "*.json"]
+
+# Black Configuration
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+# isort Configuration
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["document_generator_mcp"]
+
+# MyPy Configuration
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "pytesseract.*",
+    "PyPDF2.*",
+    "frontmatter.*",
+]
+ignore_missing_imports = true
+
+# Pytest Configuration
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+# Coverage Configuration
+[tool.coverage.run]
+source = ["document_generator_mcp"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

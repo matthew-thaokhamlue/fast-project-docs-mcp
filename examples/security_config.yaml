@@ -1,0 +1,152 @@
+# Security Configuration for Document Generator MCP
+# This file contains security settings and best practices
+
+# Input validation settings
+input_validation:
+  max_input_length: 50000  # Maximum length for user input (50KB)
+  max_file_size: 52428800  # Maximum file size (50MB)
+  max_concurrent_files: 5  # Maximum files processed concurrently
+  max_template_name_length: 100
+
+# Path security settings
+path_security:
+  restrict_to_base_directory: true  # Restrict file access to base directory
+  allow_absolute_paths: false       # Don't allow absolute paths
+  allowed_base_directories:         # List of allowed base directories
+    - "./reference_resources"
+    - "./templates"
+    - "./output"
+  allowed_file_extensions:          # Allowed file extensions
+    - ".md"
+    - ".txt"
+    - ".json"
+    - ".yaml"
+    - ".yml"
+    - ".pdf"
+    - ".png"
+    - ".jpg"
+    - ".jpeg"
+
+# Content security settings
+content_security:
+  enable_content_sanitization: true    # Enable content sanitization
+  enable_template_validation: true     # Enable template validation
+  max_template_depth: 10               # Maximum template nesting depth
+  preserve_formatting: true            # Preserve basic formatting
+
+# Resource limits
+resource_limits:
+  max_processing_time: 180            # Maximum processing time (3 minutes)
+  max_memory_usage: 268435456         # Maximum memory usage (256MB)
+  enable_rate_limiting: true          # Enable rate limiting
+  max_requests_per_minute: 30         # Maximum requests per minute
+
+# Logging security
+logging_security:
+  log_security_events: true          # Log security-related events
+  log_user_input: false              # Don't log user input (privacy)
+  log_file_paths: true               # Log file paths for auditing
+  sanitize_logs: true                # Sanitize log messages
+  max_log_size: 10485760             # Maximum log file size (10MB)
+  max_log_files: 5                   # Maximum number of log files
+
+# Error handling
+error_handling:
+  expose_detailed_errors: false      # Don't expose detailed errors to users
+  log_all_errors: true               # Log all errors for debugging
+
+# Network security (for SSE transport)
+network_security:
+  bind_address: "127.0.0.1"          # Bind to localhost only
+  enable_ssl: false                  # SSL disabled by default (enable in production)
+  ssl_verify: true                   # Verify SSL certificates
+  security_headers:                  # HTTP security headers
+    X-Content-Type-Options: "nosniff"
+    X-Frame-Options: "DENY"
+    X-XSS-Protection: "1; mode=block"
+    Content-Security-Policy: "default-src 'self'; script-src 'none'; object-src 'none';"
+
+# File system security
+filesystem_security:
+  umask: 0o077                       # Restrictive file permissions
+  temp_dir_permissions: 0o700        # Temporary directory permissions
+  restrict_file_permissions: true    # Restrict created file permissions
+
+# Process security
+process_security:
+  max_open_files: 1024               # Maximum open file descriptors
+  max_processes: 10                  # Maximum child processes
+  nice_level: 10                     # Process priority (lower)
+  disable_core_dumps: true           # Disable core dumps
+
+# Development vs Production settings
+environment:
+  # Set to 'production' for production use, 'development' for development
+  mode: "production"
+  
+  # Production-specific settings
+  production:
+    max_input_length: 25000          # Reduced for production
+    max_file_size: 26214400          # 25MB for production
+    max_concurrent_files: 3          # Reduced concurrency
+    max_requests_per_minute: 20      # Stricter rate limiting
+    expose_detailed_errors: false    # Never expose errors in production
+    
+  # Development-specific settings  
+  development:
+    max_input_length: 100000         # More lenient for development
+    max_file_size: 104857600         # 100MB for development
+    max_concurrent_files: 10         # Higher concurrency for testing
+    max_requests_per_minute: 120     # More lenient rate limiting
+    expose_detailed_errors: true     # Show errors for debugging
+
+# Security monitoring
+monitoring:
+  enable_security_monitoring: true   # Enable security event monitoring
+  alert_on_suspicious_activity: true # Alert on suspicious patterns
+  max_failed_requests: 10            # Maximum failed requests before alert
+  suspicious_patterns:               # Patterns that trigger alerts
+    - "path_traversal_attempt"
+    - "template_injection_attempt"
+    - "excessive_file_access"
+    - "rate_limit_exceeded"
+
+# Audit settings
+audit:
+  enable_audit_logging: true         # Enable audit trail
+  audit_file_access: true           # Audit file access operations
+  audit_template_operations: true   # Audit template operations
+  audit_user_actions: true          # Audit user actions
+  retention_days: 90                 # Keep audit logs for 90 days
+
+# Backup and recovery
+backup:
+  enable_config_backup: true        # Backup configuration files
+  backup_templates: true            # Backup custom templates
+  backup_retention_days: 30         # Keep backups for 30 days
+
+# Security best practices checklist
+security_checklist:
+  - "✓ Input validation enabled"
+  - "✓ Path traversal protection enabled"
+  - "✓ Template injection prevention enabled"
+  - "✓ Content sanitization enabled"
+  - "✓ Rate limiting enabled"
+  - "✓ Secure logging configured"
+  - "✓ File permissions restricted"
+  - "✓ Error information limited"
+  - "✓ Security monitoring enabled"
+  - "✓ Audit logging enabled"
+
+# Additional security notes
+security_notes: |
+  1. Regularly update dependencies to patch security vulnerabilities
+  2. Monitor logs for suspicious activity patterns
+  3. Use HTTPS in production environments
+  4. Implement proper authentication and authorization
+  5. Regular security audits and penetration testing
+  6. Keep the system updated with latest security patches
+  7. Use strong, unique passwords for any authentication
+  8. Implement proper backup and disaster recovery procedures
+  9. Train users on security best practices
+  10. Have an incident response plan ready
