@@ -51,12 +51,23 @@ class DocumentGeneratorService:
     def _ensure_output_directory(self) -> None:
         """Ensure the output directory exists, creating it if necessary."""
         try:
-            self.output_directory.mkdir(parents=True, exist_ok=True)
+            # Resolve the path to absolute
+            resolved_path = self.output_directory.resolve()
+            resolved_path.mkdir(parents=True, exist_ok=True)
+            self.output_directory = resolved_path
         except (PermissionError, OSError) as e:
             logger.warning(f"Could not create output directory {self.output_directory}: {e}")
-            # Fall back to current working directory
-            self.output_directory = Path.cwd()
-            logger.info(f"Using current directory as output: {self.output_directory}")
+            # Fall back to a generated_docs folder in current working directory
+            fallback_dir = Path.cwd() / 'generated_docs'
+            try:
+                fallback_dir.mkdir(parents=True, exist_ok=True)
+                self.output_directory = fallback_dir
+                logger.info(f"Using fallback directory as output: {self.output_directory}")
+            except (PermissionError, OSError) as e2:
+                logger.error(f"Could not create fallback directory: {e2}")
+                # Last resort: use current working directory
+                self.output_directory = Path.cwd()
+                logger.info(f"Using current directory as output: {self.output_directory}")
     
     async def generate_prd(self, 
                           user_input: str,

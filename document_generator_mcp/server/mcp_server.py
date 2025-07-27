@@ -193,10 +193,25 @@ async def main() -> None:
     # Process output directory - resolve relative paths and ensure it's writable
     output_dir = None
     if args.output_dir:
-        output_dir = Path(args.output_dir).resolve()
-        # If it's a relative path starting with './', make it relative to current working directory
-        if str(args.output_dir).startswith('./'):
-            output_dir = Path.cwd() / args.output_dir.name
+        # Always resolve relative to current working directory
+        if not Path(args.output_dir).is_absolute():
+            output_dir = Path.cwd() / args.output_dir
+        else:
+            output_dir = Path(args.output_dir)
+        
+        # Ensure the directory exists and is writable
+        try:
+            output_dir.mkdir(parents=True, exist_ok=True)
+            # Test write permissions
+            test_file = output_dir / '.write_test'
+            test_file.touch()
+            test_file.unlink()
+        except (PermissionError, OSError) as e:
+            logger.warning(f"Cannot use output directory {output_dir}: {e}")
+            # Fall back to current directory
+            output_dir = Path.cwd() / 'generated_docs'
+            output_dir.mkdir(parents=True, exist_ok=True)
+            logger.info(f"Using fallback output directory: {output_dir}")
     
     # Create server
     server = DocumentGeneratorMCPServer(

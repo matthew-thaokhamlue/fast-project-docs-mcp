@@ -119,8 +119,8 @@ def validate_file_path(file_path: Union[str, Path],
     else:
         path = file_path
     
-    # Check for dangerous path components
-    dangerous_components = ['..', '.', '~', '$']
+    # Check for dangerous path components (but allow . for current directory)
+    dangerous_components = ['..', '~', '$']
     path_str = str(path)
     
     for component in dangerous_components:

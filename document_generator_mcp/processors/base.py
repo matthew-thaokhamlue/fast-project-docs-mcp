@@ -163,10 +163,10 @@ class FileProcessor(ABC):
         
         for enc in encodings_to_try:
             try:
-                async with asyncio.to_thread(open, file_path, 'r', encoding=enc) as f:
-                    content = await asyncio.to_thread(f.read)
-                    logger.debug(f"Successfully read {file_path} with encoding {enc}")
-                    return content
+                # Use asyncio.to_thread to run the entire file read operation
+                content = await asyncio.to_thread(self._read_file_sync, file_path, enc)
+                logger.debug(f"Successfully read {file_path} with encoding {enc}")
+                return content
             except UnicodeDecodeError:
                 logger.debug(f"Failed to read {file_path} with encoding {enc}")
                 continue
@@ -184,17 +184,25 @@ class FileProcessor(ABC):
             ]
         )
     
+    def _read_file_sync(self, file_path: Path, encoding: str) -> str:
+        """Synchronous file reading helper for asyncio.to_thread."""
+        with open(file_path, 'r', encoding=encoding) as f:
+            return f.read()
+    
     async def _read_binary_file(self, file_path: Path) -> bytes:
         """Read binary file content."""
         try:
-            async with asyncio.to_thread(open, file_path, 'rb') as f:
-                content = await asyncio.to_thread(f.read)
-                return content
+            return await asyncio.to_thread(self._read_binary_file_sync, file_path)
         except Exception as e:
             raise FileProcessingError(
                 f"Could not read binary file: {file_path}: {str(e)}",
                 str(file_path)
             )
+    
+    def _read_binary_file_sync(self, file_path: Path) -> bytes:
+        """Synchronous binary file reading helper for asyncio.to_thread."""
+        with open(file_path, 'rb') as f:
+            return f.read()
     
     def _clean_extracted_text(self, text: str) -> str:
         """Clean and normalize extracted text."""

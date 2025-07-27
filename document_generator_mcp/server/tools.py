@@ -226,9 +226,14 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
             # Security validation
             security_config = get_secure_defaults()
 
-            # Validate folder path
+            # Validate folder path - resolve relative to current working directory
+            if not Path(folder_path).is_absolute():
+                resolved_folder_path = Path.cwd() / folder_path
+            else:
+                resolved_folder_path = Path(folder_path)
+            
             validated_folder_path = validate_reference_folder(
-                folder_path,
+                str(resolved_folder_path),
                 base_directory=Path.cwd() if security_config.restrict_to_base_directory else None
             )
 
@@ -247,6 +252,11 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
                 "folder_path": str(validated_folder_path)
             })
 
+            # Log the resolved path for debugging
+            logger.info(f"Analyzing folder: {validated_folder_path} (resolved from: {folder_path})")
+            logger.info(f"Current working directory: {Path.cwd()}")
+            logger.info(f"Folder exists: {validated_folder_path.exists()}")
+            
             resource_analyzer = ResourceAnalyzerService()
             analysis = await resource_analyzer.analyze_folder(validated_folder_path)
 
