@@ -84,7 +84,7 @@ pip install -e .
   "mcpServers": {
     "document-generator": {
       "command": "document-generator-mcp",
-      "args": ["--transport", "stdio", "--output-dir", "./generated_docs"],
+      "args": ["--transport", "stdio", "--output-dir", "generated_docs"],
       "env": {
         "DOCUMENT_GENERATOR_LOG_LEVEL": "INFO"
       }
@@ -93,6 +93,10 @@ pip install -e .
 }
 ```
 
+**Configuration Notes**:
+- `--output-dir generated_docs`: Creates a `generated_docs` folder in your current directory
+- `DOCUMENT_GENERATOR_LOG_LEVEL`: Set to `DEBUG` for detailed logging, `INFO` for normal use
+
 3. **Restart Claude Desktop** to load the MCP server
 
 ### 3. Test the Integration
@@ -100,20 +104,35 @@ pip install -e .
 Once connected, you can use these MCP tools:
 
 - `generate_prd`: Generate Product Requirements Document
+  - Parameters: `user_input`, `project_context`, `reference_folder`, `template_config` (use `"default_prd"`)
 - `generate_spec`: Generate Technical Specification
+  - Parameters: `requirements_input`, `existing_prd_path`, `reference_folder`, `template_config` (use `"default_spec"`)
 - `generate_design`: Generate Design Document
+  - Parameters: `specification_input`, `existing_spec_path`, `reference_folder`, `template_config` (use `"default_design"`)
 - `analyze_resources`: Analyze reference resources
+  - Parameters: `folder_path` (default: `"reference_resources"`)
 - `save_generated_document`: Save AI-generated content with validation
-- `list_templates`: List available templates
-- `customize_template`: Customize document templates
+  - Parameters: `document_type`, `content`, `filename`, `validate_content`
+- `list_templates`: List available templates (no parameters)
+- `list_supported_formats`: List supported file formats (no parameters)
 
 #### Verify Success
 
-After running the tools, check your `./generated_docs` folder for:
+After running the tools, check your `generated_docs` folder for:
 
-- PRD.md, SPEC.md, or DESIGN.md files
-- Properly formatted markdown with sections
-- Content that incorporates your requirements and any reference materials
+- **PRD.md, SPEC.md, or DESIGN.md files** - Professional documents with proper structure
+- **Comprehensive content** - Typically 2,000-4,000+ words with detailed sections
+- **Proper formatting** - Markdown with headers, lists, tables, and code blocks
+- **Integrated reference materials** - Content that incorporates your reference resources
+
+**Example output structure for PRD**:
+- Introduction and project context
+- Objectives and success criteria  
+- User stories with acceptance criteria
+- Success metrics and KPIs
+- Technical and business constraints
+- Dependencies and assumptions
+- Glossary and references
 
 The key advantage is experiencing the full AI-enhanced workflow where Claude's intelligence is guided by the MCP's structured prompts to create much better documents than either could produce alone.
 
@@ -126,13 +145,18 @@ The key advantage is experiencing the full AI-enhanced workflow where Claude's i
 #### Generate a PRD
 
 ```
-Use the generate_prd tool to create a product requirements document for a mobile fitness tracking app with features like workout logging, progress tracking, and social sharing.
+Use the generate_prd tool with template_config "default_prd" to create a product requirements document for a mobile fitness tracking app with features like workout logging, progress tracking, and social sharing.
 ```
+
+**Important**: Use template_config values:
+- `"default_prd"` for Product Requirements Documents
+- `"default_spec"` for Technical Specifications  
+- `"default_design"` for Design Documents
 
 #### Generate a SPEC from existing PRD
 
 ```
-Use the generate_spec tool to create a technical specification based on the PRD.md file, focusing on the backend architecture and API design for the fitness tracking app.
+Use the generate_spec tool with template_config "default_spec" to create a technical specification based on the PRD.md file, focusing on the backend architecture and API design for the fitness tracking app.
 ```
 
 #### Analyze Reference Resources
@@ -141,10 +165,31 @@ Use the generate_spec tool to create a technical specification based on the PRD.
 Use the analyze_resources tool to check what reference materials are available in the reference_resources folder and summarize their contents.
 ```
 
+**Note**: Place your reference files in a `reference_resources` folder in your project directory. The MCP server will look for this folder relative to where Claude Desktop is running.
+
+**Recommended folder structure**:
+```
+your-project/
+├── reference_resources/
+│   ├── requirements/
+│   │   ├── user_stories.md
+│   │   └── business_requirements.txt
+│   ├── technical/
+│   │   ├── api_spec.json
+│   │   └── architecture.yaml
+│   └── design/
+│       ├── mockups.png
+│       └── style_guide.md
+└── generated_docs/          # Created automatically
+    ├── PRD.md
+    ├── SPEC.md
+    └── DESIGN.md
+```
+
 #### Save Generated Content
 
 ```
-After generating the document content, use the save_generated_document tool to save it as PRD.md with validation enabled.
+After I generate the document content, use the save_generated_document tool to save it with validation enabled. The file will be saved to your configured output directory.
 ```
 
 ### Expected Workflow
@@ -155,6 +200,35 @@ After generating the document content, use the save_generated_document tool to s
 4. **Claude processes the prompt** and generates high-quality content
 5. **Claude calls save_generated_document** to save the final result
 6. **You get a professional document** in your `./generated_docs` directory
+
+### Quick Start Example
+
+Here's a complete working example:
+
+1. **Create reference resources** (optional):
+   ```bash
+   mkdir -p reference_resources/requirements
+   echo "# User Stories\n- As a user, I want to track workouts\n- As a user, I want to see progress" > reference_resources/requirements/user_stories.md
+   ```
+
+2. **In Claude Desktop, ask**:
+   ```
+   Use the generate_prd tool with template_config "default_prd" to create a product requirements document for a mobile fitness tracking app with features like workout logging, progress tracking, and social sharing.
+   ```
+
+3. **Claude will generate a comprehensive PRD** with sections like:
+   - Introduction and project context
+   - Objectives and success criteria
+   - User stories with acceptance criteria
+   - Success metrics and KPIs
+   - Constraints and dependencies
+
+4. **Save the generated content**:
+   ```
+   Use the save_generated_document tool to save this as FitTrack_PRD.md with validation enabled.
+   ```
+
+5. **Check your output directory** for the generated document!
 
 ### Direct Python API Usage
 
@@ -358,6 +432,25 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 This is expected behavior. MCP servers are designed to be connected to clients (like Claude Desktop), not run standalone. Configure the server in your MCP client instead.
 
+#### Template not found errors
+
+Use the correct template names:
+- `"default_prd"` (not `"default"`) for PRD documents
+- `"default_spec"` for technical specifications
+- `"default_design"` for design documents
+
+#### Reference resources not found
+
+1. Create a `reference_resources` folder in your project directory
+2. Organize files in subfolders like `requirements/`, `technical/`, `design/`
+3. Ensure the MCP server has read access to the folder
+
+#### Output directory issues
+
+1. The server will create the output directory if it doesn't exist
+2. If permission denied, it falls back to a `generated_docs` folder in the current directory
+3. Check that the directory is writable
+
 #### Import errors
 
 Make sure you've installed the package in development mode:
@@ -383,6 +476,16 @@ document-generator-mcp --help
 # Test server creation (this should not show import errors)
 python3 -c "from document_generator_mcp.server.mcp_server import DocumentGeneratorMCPServer; print('✅ Installation successful')"
 ```
+
+### Supported File Formats for Reference Resources
+
+The system can process these file types in your `reference_resources` folder:
+- **Markdown** (`.md`, `.markdown`): Documentation, requirements
+- **Text** (`.txt`, `.text`): Plain text documents  
+- **JSON** (`.json`): API specifications, configuration files
+- **YAML** (`.yaml`, `.yml`): Configuration files, data structures
+- **PDF** (`.pdf`): Documents, specifications, manuals
+- **Images** (`.png`, `.jpg`, `.jpeg`, `.gif`, `.bmp`, `.tiff`): Screenshots, diagrams, mockups
 
 ## Support
 
