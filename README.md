@@ -14,6 +14,7 @@ A Python-based Model Context Protocol (MCP) server that automates the generation
 ## Supported Document Types
 
 ### PRD (Product Requirements Document)
+
 - Introduction and project context
 - Objectives and success criteria
 - User stories with acceptance criteria
@@ -21,6 +22,7 @@ A Python-based Model Context Protocol (MCP) server that automates the generation
 - Dependencies and references
 
 ### SPEC (Technical Specification)
+
 - Technical overview and architecture
 - System components and interfaces
 - Data models and relationships
@@ -28,6 +30,7 @@ A Python-based Model Context Protocol (MCP) server that automates the generation
 - Deployment considerations
 
 ### DESIGN (Design Document)
+
 - System and UI design specifications
 - Data flow and processing pipelines
 - Implementation approach and patterns
@@ -36,11 +39,11 @@ A Python-based Model Context Protocol (MCP) server that automates the generation
 
 ## Installation
 
-### Using pip
+### Prerequisites
 
-```bash
-pip install document-generator-mcp
-```
+1. **Python 3.8+** installed on your system
+2. **Claude Desktop** (or another MCP-compatible client) installed
+3. **Git** for cloning the repository
 
 ### From source
 
@@ -74,38 +77,26 @@ document-generator-mcp --transport sse --host localhost --port 8000
 
 #### Claude Desktop Configuration
 
-Add to your Claude Desktop configuration file:
+1. Open Claude Desktop settings
+2. Add this to your MCP configuration:
 
 ```json
 {
   "mcpServers": {
     "document-generator": {
       "command": "document-generator-mcp",
-      "args": ["--transport", "stdio"]
-    }
-  }
-}
-```
-
-#### VS Code Configuration
-
-Add to your VS Code settings:
-
-```json
-{
-  "mcp": {
-    "servers": {
-      "document-generator": {
-        "type": "stdio",
-        "command": "document-generator-mcp",
-        "args": ["--transport", "stdio"]
+      "args": ["--transport", "stdio", "--output-dir", "./generated_docs"],
+      "env": {
+        "DOCUMENT_GENERATOR_LOG_LEVEL": "INFO"
       }
     }
   }
 }
 ```
 
-### 3. Use the Tools
+3. **Restart Claude Desktop** to load the MCP server
+
+### 3. Test the Integration
 
 Once connected, you can use these MCP tools:
 
@@ -113,12 +104,62 @@ Once connected, you can use these MCP tools:
 - `generate_spec`: Generate Technical Specification
 - `generate_design`: Generate Design Document
 - `analyze_resources`: Analyze reference resources
+- `save_generated_document`: Save AI-generated content with validation
 - `list_templates`: List available templates
 - `customize_template`: Customize document templates
 
+#### Verify Success
+
+After running the tools, check your `./generated_docs` folder for:
+
+- PRD.md, SPEC.md, or DESIGN.md files
+- Properly formatted markdown with sections
+- Content that incorporates your requirements and any reference materials
+
+The key advantage is experiencing the full AI-enhanced workflow where Claude's intelligence is guided by the MCP's structured prompts to create much better documents than either could produce alone.
+
 ## Usage Examples
 
-### Generate a PRD
+### Using Natural Language in MCP Clients
+
+**In Claude Desktop or other MCP-compatible clients, use natural language:**
+
+#### Generate a PRD
+
+```
+Use the generate_prd tool to create a product requirements document for a mobile fitness tracking app with features like workout logging, progress tracking, and social sharing.
+```
+
+#### Generate a SPEC from existing PRD
+
+```
+Use the generate_spec tool to create a technical specification based on the PRD.md file, focusing on the backend architecture and API design for the fitness tracking app.
+```
+
+#### Analyze Reference Resources
+
+```
+Use the analyze_resources tool to check what reference materials are available in the reference_resources folder and summarize their contents.
+```
+
+#### Save Generated Content
+
+```
+After generating the document content, use the save_generated_document tool to save it as PRD.md with validation enabled.
+```
+
+### Expected Workflow
+
+1. **You ask Claude** to generate a document using natural language
+2. **Claude calls the MCP tool** (generate_prd, generate_spec, etc.)
+3. **MCP returns an intelligent prompt** with structured guidance
+4. **Claude processes the prompt** and generates high-quality content
+5. **Claude calls save_generated_document** to save the final result
+6. **You get a professional document** in your `./generated_docs` directory
+
+### Direct Python API Usage
+
+For programmatic access, you can also use the tools directly:
 
 ```python
 # Through MCP client
@@ -127,21 +168,15 @@ result = generate_prd(
     project_context="Web application for small teams",
     reference_folder="./reference_resources"
 )
-```
 
-### Generate a SPEC from PRD
-
-```python
+# Generate SPEC from PRD
 result = generate_spec(
     requirements_input="Technical requirements for the task management app",
     existing_prd_path="./PRD.md",
     reference_folder="./reference_resources"
 )
-```
 
-### Analyze Reference Resources
-
-```python
+# Analyze reference resources
 analysis = analyze_resources(folder_path="./reference_resources")
 print(f"Found {analysis['total_files']} files in {len(analysis['categories'])} categories")
 ```
@@ -195,14 +230,14 @@ version: "1.0"
 sections:
   introduction: |
     # {title}
-    
+
     ## Custom Introduction
     {introduction_content}
-  
+
   objectives: |
     ## Project Objectives
     {objectives_list}
-  
+
   # ... more sections
 ```
 
