@@ -13,7 +13,6 @@ import argparse
 
 from mcp.server.fastmcp import FastMCP
 from mcp.server.stdio import stdio_server
-from mcp.server.sse import sse_server
 
 from ..services.document_generator import DocumentGeneratorService
 from ..templates.manager import TemplateManager
@@ -108,14 +107,9 @@ class DocumentGeneratorMCPServer:
     
     async def run_sse(self, host: str = "localhost", port: int = 8000) -> None:
         """Run the server with SSE transport."""
-        logger.info(f"Starting MCP server with SSE transport on {host}:{port}")
-        
-        try:
-            async with sse_server(host, port) as server:
-                await server.serve()
-        except Exception as e:
-            logger.error(f"SSE server error: {e}")
-            raise
+        logger.info(f"SSE transport is not currently supported in this version")
+        logger.info("Please use --transport stdio for Claude Desktop integration")
+        raise NotImplementedError("SSE transport is not currently implemented")
     
     def get_server_info(self) -> Dict[str, Any]:
         """Get server information."""
@@ -126,7 +120,7 @@ class DocumentGeneratorMCPServer:
             "custom_templates_path": str(self.custom_templates_path) if self.custom_templates_path else None,
             "capabilities": {
                 "document_types": ["prd", "spec", "design"],
-                "transports": ["stdio", "sse"],
+                "transports": ["stdio"],
                 "features": [
                     "document_generation",
                     "resource_analysis", 
@@ -171,21 +165,11 @@ async def main() -> None:
     parser = argparse.ArgumentParser(description="Document Generator MCP Server")
     parser.add_argument(
         "--transport", 
-        choices=["stdio", "sse"], 
+        choices=["stdio"], 
         default="stdio",
-        help="Transport protocol to use"
+        help="Transport protocol to use (currently only stdio is supported)"
     )
-    parser.add_argument(
-        "--host", 
-        default="localhost",
-        help="Host for SSE transport"
-    )
-    parser.add_argument(
-        "--port", 
-        type=int, 
-        default=8000,
-        help="Port for SSE transport"
-    )
+
     parser.add_argument(
         "--output-dir", 
         type=Path,
@@ -220,8 +204,9 @@ async def main() -> None:
     try:
         if args.transport == "stdio":
             await server.run_stdio()
-        elif args.transport == "sse":
-            await server.run_sse(args.host, args.port)
+        else:
+            logger.error(f"Unsupported transport: {args.transport}")
+            sys.exit(1)
     except KeyboardInterrupt:
         logger.info("Server shutdown requested")
     except Exception as e:

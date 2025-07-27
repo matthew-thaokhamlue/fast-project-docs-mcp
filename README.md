@@ -63,15 +63,14 @@ pip install -e ".[dev]"
 
 ## Quick Start
 
-### 1. Start the MCP Server
+### 1. Install the Package
 
 ```bash
-# Using STDIO transport (for Claude Desktop)
-document-generator-mcp --transport stdio
-
-# Using SSE transport (for web clients)
-document-generator-mcp --transport sse --host localhost --port 8000
+# Install in development mode
+pip install -e .
 ```
+
+> **Note**: The MCP server is designed to be used with MCP clients like Claude Desktop. It cannot run standalone - it needs to be configured in your MCP client to work properly.
 
 ### 2. Configure MCP Client
 
@@ -350,6 +349,36 @@ flake8 document_generator_mcp/
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Troubleshooting
+
+### Common Issues
+
+#### "TaskGroup error" when running standalone
+This is expected behavior. MCP servers are designed to be connected to clients (like Claude Desktop), not run standalone. Configure the server in your MCP client instead.
+
+#### Import errors
+Make sure you've installed the package in development mode:
+```bash
+pip install -e .
+```
+
+#### Server not appearing in Claude Desktop
+1. Check that your configuration is correct in Claude Desktop settings
+2. Restart Claude Desktop after adding the configuration
+3. Check the Claude Desktop logs for any error messages
+
+### Testing the Installation
+
+To verify the installation works:
+
+```bash
+# Check if the command is available
+document-generator-mcp --help
+
+# Test server creation (this should not show import errors)
+python3 -c "from document_generator_mcp.server.mcp_server import DocumentGeneratorMCPServer; print('✅ Installation successful')"
+```
 
 ## Support
 
