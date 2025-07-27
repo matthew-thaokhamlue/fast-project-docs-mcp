@@ -94,9 +94,13 @@ class DocumentGeneratorMCPServer:
         logger.info("Starting MCP server with STDIO transport")
         
         try:
+            # Use FastMCP's built-in stdio runner
             await self.mcp.run_stdio_async()
         except Exception as e:
             logger.error(f"STDIO server error: {e}")
+            logger.error(f"Error type: {type(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             raise
     
     async def run_sse(self, host: str = "localhost", port: int = 8000) -> None:
@@ -186,9 +190,17 @@ async def main() -> None:
     # Setup logging
     setup_logging(args.log_level)
     
+    # Process output directory - resolve relative paths and ensure it's writable
+    output_dir = None
+    if args.output_dir:
+        output_dir = Path(args.output_dir).resolve()
+        # If it's a relative path starting with './', make it relative to current working directory
+        if str(args.output_dir).startswith('./'):
+            output_dir = Path.cwd() / args.output_dir.name
+    
     # Create server
     server = DocumentGeneratorMCPServer(
-        output_directory=args.output_dir,
+        output_directory=output_dir,
         custom_templates_path=args.templates_dir
     )
     

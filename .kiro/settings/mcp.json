@@ -2,7 +2,7 @@
   "mcpServers": {
     "document-generator": {
       "command": "document-generator-mcp",
-      "args": ["--transport", "stdio", "--output-dir", "./generated_docs"],
+      "args": ["--transport", "stdio", "--output-dir", "generated_docs"],
       "env": {
         "DOCUMENT_GENERATOR_LOG_LEVEL": "INFO"
       }

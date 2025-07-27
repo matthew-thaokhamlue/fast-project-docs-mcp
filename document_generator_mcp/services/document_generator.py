@@ -46,8 +46,17 @@ class DocumentGeneratorService:
         self.content_processor = content_processor or ContentProcessor(self.template_manager)
         self.output_directory = output_directory or Path.cwd()
         
-        # Ensure output directory exists
-        self.output_directory.mkdir(parents=True, exist_ok=True)
+        # Note: Directory creation is deferred until actually needed
+    
+    def _ensure_output_directory(self) -> None:
+        """Ensure the output directory exists, creating it if necessary."""
+        try:
+            self.output_directory.mkdir(parents=True, exist_ok=True)
+        except (PermissionError, OSError) as e:
+            logger.warning(f"Could not create output directory {self.output_directory}: {e}")
+            # Fall back to current working directory
+            self.output_directory = Path.cwd()
+            logger.info(f"Using current directory as output: {self.output_directory}")
     
     async def generate_prd(self, 
                           user_input: str,
@@ -237,6 +246,9 @@ class DocumentGeneratorService:
     async def _save_document(self, file_path: Path, content: str) -> None:
         """Save document content to file."""
         try:
+            # Ensure output directory exists before saving
+            self._ensure_output_directory()
+            
             file_path.write_text(content, encoding='utf-8')
             logger.info(f"Document saved to: {file_path}")
         except Exception as e:
