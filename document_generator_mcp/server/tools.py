@@ -38,7 +38,7 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
     """Register all MCP tools with the server."""
     
     @mcp.tool()
-    def generate_prd(
+    async def generate_prd(
         user_input: str,
         project_context: str = "",
         reference_folder: str = "reference_resources",
@@ -90,13 +90,12 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
                 "has_reference_folder": validated_reference_folder is not None
             })
 
-            import asyncio
-            result = asyncio.run(document_service.generate_prd_prompt(
+            result = await document_service.generate_prd_prompt(
                 user_input=validated_user_input,
                 project_context=validated_project_context,
                 reference_folder=str(validated_reference_folder) if validated_reference_folder else "",
                 template_config=validated_template_config
-            ))
+            )
 
             log_security_event("prd_prompt_generation_success", {
                 "document_type": result.document_type,
@@ -130,7 +129,7 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
             }
     
     @mcp.tool()
-    def generate_spec(
+    async def generate_spec(
         requirements_input: str,
         existing_prd_path: str = "",
         reference_folder: str = "reference_resources",
@@ -148,13 +147,12 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
             Dict containing intelligent prompt for Claude to process and generate SPEC content
         """
         try:
-            import asyncio
-            result = asyncio.run(document_service.generate_spec_prompt(
+            result = await document_service.generate_spec_prompt(
                 requirements_input=requirements_input,
                 existing_prd_path=existing_prd_path,
                 reference_folder=reference_folder,
                 template_config=template_config
-            ))
+            )
 
             return result.to_dict()
 
@@ -172,7 +170,7 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
             }
     
     @mcp.tool()
-    def generate_design(
+    async def generate_design(
         specification_input: str,
         existing_spec_path: str = "",
         reference_folder: str = "reference_resources",
@@ -190,13 +188,12 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
             Dict containing intelligent prompt for Claude to process and generate DESIGN content
         """
         try:
-            import asyncio
-            result = asyncio.run(document_service.generate_design_prompt(
+            result = await document_service.generate_design_prompt(
                 specification_input=specification_input,
                 existing_spec_path=existing_spec_path,
                 reference_folder=reference_folder,
                 template_config=template_config
-            ))
+            )
 
             return result.to_dict()
 
@@ -214,7 +211,7 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
             }
     
     @mcp.tool()
-    def analyze_resources(
+    async def analyze_resources(
         folder_path: str = "reference_resources"
     ) -> Dict[str, Any]:
         """Analyze and categorize reference resources
@@ -250,9 +247,8 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
                 "folder_path": str(validated_folder_path)
             })
 
-            import asyncio
             resource_analyzer = ResourceAnalyzerService()
-            analysis = asyncio.run(resource_analyzer.analyze_folder(validated_folder_path))
+            analysis = await resource_analyzer.analyze_folder(validated_folder_path)
 
             log_security_event("resource_analysis_success", {
                 "total_files": analysis.total_files,
@@ -449,7 +445,7 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
             }
     
     @mcp.tool()
-    def save_generated_document(
+    async def save_generated_document(
         document_type: str,
         content: str,
         filename: str = "",
@@ -480,7 +476,7 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
                 validation_requested=validate_content
             )
 
-            result = asyncio.run(document_service.save_ai_generated_content(ai_content))
+            result = await document_service.save_ai_generated_content(ai_content)
 
             log_security_event("ai_content_saved", {
                 "document_type": document_type,
@@ -503,7 +499,7 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
             }
 
     @mcp.tool()
-    def validate_generated_content(
+    async def validate_generated_content(
         document_type: str,
         content: str
     ) -> Dict[str, Any]:
@@ -517,12 +513,10 @@ def register_tools(mcp: FastMCP, document_service: DocumentGeneratorService) -> 
             Dict containing validation results and suggestions
         """
         try:
-            import asyncio
-
-            result = asyncio.run(document_service.validate_ai_content(
+            result = await document_service.validate_ai_content(
                 document_type=document_type.lower(),
                 content=content
-            ))
+            )
 
             return result.to_dict()
 

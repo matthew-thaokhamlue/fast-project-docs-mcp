@@ -12,7 +12,6 @@ from typing import Optional, Dict, Any
 import argparse
 
 from mcp.server.fastmcp import FastMCP
-from mcp.server.stdio import stdio_server
 
 from ..services.document_generator import DocumentGeneratorService
 from ..templates.manager import TemplateManager
@@ -95,12 +94,7 @@ class DocumentGeneratorMCPServer:
         logger.info("Starting MCP server with STDIO transport")
         
         try:
-            async with stdio_server() as (read_stream, write_stream):
-                await self.mcp.run(
-                    read_stream, 
-                    write_stream,
-                    self.mcp.create_initialization_options()
-                )
+            await self.mcp.run_stdio_async()
         except Exception as e:
             logger.error(f"STDIO server error: {e}")
             raise

@@ -355,15 +355,19 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ### Common Issues
 
 #### "TaskGroup error" when running standalone
+
 This is expected behavior. MCP servers are designed to be connected to clients (like Claude Desktop), not run standalone. Configure the server in your MCP client instead.
 
 #### Import errors
+
 Make sure you've installed the package in development mode:
+
 ```bash
 pip install -e .
 ```
 
 #### Server not appearing in Claude Desktop
+
 1. Check that your configuration is correct in Claude Desktop settings
 2. Restart Claude Desktop after adding the configuration
 3. Check the Claude Desktop logs for any error messages
